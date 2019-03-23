@@ -53,6 +53,10 @@
     if ( isset( $_GET[ 'sort_field' ] ) ) {
         $sort_field = $_GET[ 'sort_field' ];
         $sort_order = $_GET[ 'sort_order' ];
+
+        // Check for column sort order & toggle it.
+        $sort_order == 'DESC' ? $sort_order = 'ASC' : $sort_order = 'DESC';
+
     } else {
         $sort_order = 'ASC';
         $sort_field = 1;
@@ -64,9 +68,8 @@
         echo "<h2><a href='/sorting'>Home</a></h2>";
         echo "<hr>";
         
-        // pagination( $offset, $page_records );
 
-        $sql = " SELECT ClientID, ClientName, ClientAddress FROM Clients";    
+        $sql = "SELECT ClientID, ClientName, ClientAddress FROM Clients";    
         $sql .= " ORDER BY $sort_field $sort_order";
         $sql .= " LIMIT $offset, $page_records";
 
@@ -74,13 +77,20 @@
 
 
         // Pagination Links
-        $sql = "SELECT ClientID, ClientName, ClientAddress FROM Clients";
-        $data = $con->query( $sql );
+        $pag_sql = "SELECT ClientID, ClientName, ClientAddress FROM Clients";
+        $data = $con->query( $pag_sql );
         $rescords = $data->num_rows;
         $page_records = ceil( $rescords / $page_records );
         $prev = $page - 1;
         $next = $page + 1;
 
+        // echo "<pre>";
+        // var_dump($offset);
+        // echo "</pre>";
+        // var_dump($sql);
+        // echo "<pre>";
+        // echo($offset);
+        // echo "</pre>";
 
         pagination( $page_records, $prev, $next );
 
@@ -132,7 +142,11 @@
             $k = $i + 1;
             
             // Check for column sort order
-            $sort_order == 'DESC' ? $sort_order = 'ASC' : $sort_order = 'DESC';
+            // $sort_order == 'DESC' ? $sort_order = 'ASC' : $sort_order = 'DESC';
+
+            // echo "<pre>";
+            // var_dump($sort_order);
+            // echo "</pre>";
 
             echo "<th><a href='?page=$page&sort_field=$k&sort_order=$sort_order'>" . $field->name . "</a></th>";
         }
