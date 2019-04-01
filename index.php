@@ -154,7 +154,7 @@
                     if ( $sort_field == 1 && $sort_order == 'ASC' ) {
                         echo '<a class="pagination-item" href="?page_num=' . $prev .'">Prev</a>';
                     } else {
-                        echo "<a class='pagination-item' href='?page_num=$prev&sort_field=$sort_field&sort_order=$sort_order'>Prev</a>";                        
+                        echo "<a class='pagination-item' href='?page_num=$prev&sort_field=$sort_field&sort_order=$sort_order '>Prev</a>";                        
                     }                    
                 }
 
@@ -162,9 +162,9 @@
                     $j = $i + 1;
                     // Adding active class to the current page number.
                     if ( $j == $page_num ) {
-                        echo "<a class='pagination-item active' href='?page_num=$j&sort_field=$sort_field&sort_order=$sort_order'>" . $j . "</a>";                        
+                        echo "<a class='pagination-item active' href='?page_num=$j&sort_field=$sort_field&sort_order=$sort_order '>" . $j . "</a>";                        
                     } else {
-                        echo "<a class='pagination-item' href='?page_num=$j&sort_field=$sort_field&sort_order=$sort_order'>" . $j . "</a>";
+                        echo "<a class='pagination-item' href='?page_num=$j&sort_field=$sort_field&sort_order=$sort_order '>" . $j . "</a>";
                     }
                 }
 
@@ -173,9 +173,9 @@
                     echo '<a class="pagination-item hidden" ' . $next .' ">Next</a>';
                 } else {
                     if ( $sort_field == 1 && $sort_order == 'ASC' ) {
-                        echo '<a class="pagination-item" href="?page_num=' . $next .'">Next</a>';
+                        echo '<a class="pagination-item" href="?page_num=' . $next .' ">Next</a>';
                     } else {
-                        echo "<a class='pagination-item' href='?page_num=$next&sort_field=$sort_field&sort_order=$sort_order'>Next</a>";                        
+                        echo "<a class='pagination-item' href='?page_num=$next&sort_field=$sort_field&sort_order=$sort_order '>Next</a>";                        
                     }
                 }
                             
@@ -200,7 +200,7 @@
             // incrementing counter by 1 to start with "1" instead of "0".
             $k = $i + 1;
             // Printing Out the column names.
-            echo "<th><a href='?page_num=$page_num&sort_field=$k&sort_order=$sort_order'>" . $field->name . "</a></th>";
+            echo "<th><a href='?page_num=$page_num&sort_field=$k&sort_order=$sort_order '>" . $field->name . "</a></th>";
         }
         // sql_constructor( $sql, $k, $sort_order, $offset, $items_per_page );
     }
