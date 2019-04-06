@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
       <style>
       /* Color Palette: #010101 | #69779B | #ACDBDF | #F0ECE2 */
+      /* Color Palette: #cdffeb | #009f9d | #07456f | #0f0a3c */
+      /* Color Palette: #f4f9f4 | #a7d7c5 | #74b49b | #5c8d89 */
+      /* Color Palette: #3a0088 | #930077 | #e61c5d | #ffe98a */
+      /* Color Palette: #900c3f | #c70039 | #ff5733 | #ffc300ح */
       :root { --primary: #69779B; --secondary: #ACDBDF; --shadow: #010101; --link: #F0ECE2; }
 
       body { color: var(--shadow); font-family: 'Lobster', 'Roboto'; font-size: 20px; text-align: center; margin: 30px auto; width: 100%; }
@@ -15,11 +19,13 @@
       a:hover { color: var(--shadow); }
       hr { border: 1px solid var(--primary); width: 90%; }
       /* Table */
-      table { border-collapse: collapse; width: 85%; text-align: center; margin: 30px auto; columns: 20% 30% 50%;}
+      table { border-collapse: collapse; width: 85%; text-align: center; margin: 30px auto; }
       th { padding: 10px; background-color: var(--primary); }
       th > a { color: var(--link); text-decoration: none; }
       th > a:hover { color: var(--shadow); }
       tr:nth-child(even) { background-color: var(--link); }
+      /* tr:nth-child(odd) { background-color: var(--secondary); } */
+      /* td { border-radius: 20rem; } */
       /* Pagination */
       .pagination-container { display: inline-flex; font-size: 1.3rem; border-radius: 15px; }
       .pagination { margin: -2px 0; padding: 5px 0; }
@@ -27,7 +33,11 @@
       .pagination-item:hover, .active { background-color: var(--primary); color: var(--secondary); text-decoration: underline; }
       .active { border: 4px double var(--secondary); pointer-events: none; }
       .disabled { background-color: var(--primary); color: var(--secondary); pointer-events: none; opacity: 0.5; }
-      .hidden { visibility: hidden; }
+      .hidden { visibility: hidden; display: none; }
+      /* Input Fields */
+      select { cursor: pointer; font-size: 1.1rem; background-color: var(--link); color: var(--primary); padding: 0.5rem; border-radius: 7px; margin: 0.8rem; }
+      button { line-height: 1.3rem; font-size: 1.1rem; color: var(--shadow); padding: 0.5rem; border-radius: 7px; background-color: var(--link); }
+      button:hover { color: var(--secondary); text-decoration: underline; padding: 0.5rem; border-radius: 7px; background-color: var(--primary); }
     </style>
 </head>
 <body>
@@ -54,10 +64,18 @@
     // Retreiving page number "if any".
     if ( isset( $_GET[ 'page_num' ] ) ) {
         $page_num = $_GET[ 'page_num' ];
+           if ( $page_num <= 0 ) {
+            $page_num = 1;
+        }
+        // elseif ( $page_num > $items_per_page ) {
+        //     $page_num = $items_per_page;
+        // } else {
+        //     $page_num = $_GET[ 'page_num' ];
+        // }
     } else {
         $page_num = 1;
     }
-
+    
     // Retreiving number of records per page.
     if ( $page_num == '' || $page_num == 1 ) {
         $offset = 0;
@@ -78,12 +96,14 @@
     } else {
         $sort_order = 'ASC';
     }
+
+
 /**************************************************************************************************/ 
     
-    echo "<div class='container'>";
+    echo '<div class="container">';
 
-        echo "<h2><a href='./'>Sorting</a></h2>";
-        echo "<hr>";
+        echo '<h2><a href="./">Sorting</a></h2>';
+        echo '<hr>';
 
         $sql = "SELECT ClientID, ClientName, ClientAddress FROM Clients";
         $sql .= " ORDER BY $sort_field $sort_order";
@@ -102,7 +122,7 @@
          * but all the attempted trials got failed.
          * I just do it as the same way I did before, & I handeled all its scenario cases.
          * 
-         * **/ 
+         **/ 
         
         $page_sql = "SELECT ClientID, ClientName, ClientAddress FROM Clients";
         $data = $connection->query( $page_sql );
@@ -112,16 +132,15 @@
 
         pagination( $page_num, $items_per_page, $sort_field, $sort_order );
 
-        
 
-        echo "<table>";
+        echo '<table>';
             display_header( $result, $sort_order, $page_num );
             display_rows( $result );
-        echo "</table>";
+        echo '</table>';
 
-        echo "<hr>";
+        echo '<hr>';
 
-    echo "</div>";
+    echo '</div>';
 
     $connection->close();
     /****************************************************************/
@@ -132,55 +151,58 @@
     //     $sql .= " ORDER BY $sort_field $sort_order";
     //     $sql .= " LIMIT $offset, $items_per_page";
     //     var_dump($sql);
-    //     echo "<br/><br/>";
+    //     echo '<br/><br/>';
     //     return $sql;
     // }
 
     /*********************************************************************/
     //       Looping on items to make the equivelent page numbers.       //
     /*********************************************************************/
-    
     function pagination(  $page_num, $items_per_page, $sort_field, $sort_order ) {
         $prev = $page_num - 1;
         $next = $page_num + 1;
-        echo "<div class='pagination-container'>";
-            echo "<div class='pagination'>";
+
+        // if ( $page_num <= 0 || $page_num > $items_per_page ) {
+        //     echo '<h4 class="main">Wrong Data.!</h4>';
+        // } else {
+            echo '<div class="pagination-container">';
+                echo '<div class="pagination">';
                 
-                // Toggle Prev button according to number of pages, & checking if it has sort_field & sort_order.
-                if ( $page_num == '' || $page_num == 1 ) {
-                    echo '<a class="pagination-item hidden" ' . $prev .' ">Prev</a>';
-                }
-                else {
-                    if ( $sort_field == 1 && $sort_order == 'ASC' ) {
-                        echo '<a class="pagination-item" href="?page_num=' . $prev .'">Prev</a>';
-                    } else {
-                        echo "<a class='pagination-item' href='?page_num=$prev&sort_field=$sort_field&sort_order=$sort_order '>Prev</a>";                        
-                    }                    
-                }
-
-                for ( $i = 0; $i < $items_per_page; $i++ ) { 
-                    $j = $i + 1;
-                    // Adding active class to the current page number.
-                    if ( $j == $page_num ) {
-                        echo "<a class='pagination-item active' href='?page_num=$j&sort_field=$sort_field&sort_order=$sort_order '>" . $j . "</a>";                        
-                    } else {
-                        echo "<a class='pagination-item' href='?page_num=$j&sort_field=$sort_field&sort_order=$sort_order '>" . $j . "</a>";
-                    }
-                }
-
-                // Toggle Next button according to number of pages, & checking if it has sort_field & sort_order.
-                if ( $page_num == $items_per_page ) {
-                    echo '<a class="pagination-item hidden" ' . $next .' ">Next</a>';
+            // Toggle Prev button according to number of pages, & checking if it has sort_field & sort_order.
+            if ( $page_num == '' || $page_num == 1 ) {
+                echo '<a class="pagination-item hidden" ' . $prev . '">Prev</a>';
+            }
+            else {
+                if ( $sort_field == 1 && $sort_order == 'ASC' ) {
+                    echo '<a class="pagination-item" href="?page_num=' . $prev . '">Prev<a>';
                 } else {
-                    if ( $sort_field == 1 && $sort_order == 'ASC' ) {
-                        echo '<a class="pagination-item" href="?page_num=' . $next .' ">Next</a>';
-                    } else {
-                        echo "<a class='pagination-item' href='?page_num=$next&sort_field=$sort_field&sort_order=$sort_order '>Next</a>";                        
-                    }
+                    echo '<a class="pagination-item" href="?page_num=' . $prev . '&sort_field=' . $sort_field . '&sort_order=' . $sort_order . '">Prev</a>';
+                }                    
+            }
+
+            for ( $i = 0; $i < $items_per_page; $i++ ) { 
+                $j = $i + 1;
+                // Adding active class to the current page number.
+                if ( $j == $page_num ) {
+                    echo '<a class="pagination-item active" href="?page_num=' . $j . '">'.$j.'</a>';
+                } else {
+                    echo '<a class="pagination-item" href="?page_num=' . $j . '">' . $j . '</a>';
                 }
-                            
-            echo "</div>
-        </div>";
+            }
+
+            // Toggle Next button according to number of pages, & checking if it has sort_field & sort_order.
+            if ( $page_num >= $items_per_page ) {
+                echo '<a class="pagination-item hidden"' . $next . ' ">Next</a>';
+            } else {
+                if ( $sort_field == 1 && $sort_order == 'ASC' ) {
+                    echo '<a class="pagination-item" href="?page_num=' . $next . '">Next</a>';
+                } else {
+                    echo '<a class="pagination-item" href="?page_num=' . $next . '&sort_field=' . $sort_field . '&sort_order=' . $sort_order . '">Next</a>';
+                }
+            }
+        // }
+        echo '</div>
+    </div>';
     }
     
     /*********************************************************************/
@@ -189,7 +211,7 @@
     
     // function display_header( $sql, $result, $sort_order, $offset, $items_per_page ) { 
 
-    function display_header( $result, $sort_order, $page_num ) { 
+    function display_header( $result, $sort_order, $page_num ) {
         $field_cnt = $result->field_count;
 
         // Check & Toggling sort order between ASC & DESC.
@@ -199,13 +221,17 @@
             $field = $result->fetch_field();
             // incrementing counter by 1 to start with "1" instead of "0".
             $k = $i + 1;
+
             // Printing Out the column names.
             echo "<th><a href='?page_num=$page_num&sort_field=$k&sort_order=$sort_order '>" . $field->name . "</a></th>";
         }
         // sql_constructor( $sql, $k, $sort_order, $offset, $items_per_page );
     }
-    /******************************************************************/
-    // Looping on table data, drawing rows & displaying its data.
+
+    /********************************************************************/
+    //    Looping on table data, drawing rows & displaying its data.    //
+    /*********************************************************************/
+
     function display_rows( $result ) {
         $field_cnt = $result->field_count;
 
