@@ -1,318 +1,303 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<title>Sorting</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<style>
-			/* Color Palette: #010101 | #69779B | #ACDBDF | #F0ECE2 */
-			* { box-sizing: border-box; }
-			:root { --primary: #69779B; --secondary: #ACDBDF; --shadow: #010101; --link: #F0ECE2; }
-			body { color: var(--shadow); font-family: 'Lobster', 'Roboto'; font-size: 1.3rem; text-align: center; margin: 2rem auto; width: 100%; }
-			.container { width: inherit; }
-			.main { color: var(--primary); }
-			a { color: var(--primary); text-decoration: none; }
-			a:hover { color: var(--shadow); transition: all 0.6s ease-in-out; }
-			hr { border: 1px solid var(--primary); width: 90%; }
-			/* Table */
-			table { border-collapse: collapse; width: 85%; text-align: center; margin: 1rem auto; }
-			th { padding: 0.8rem; background-color: var(--primary); }
-			th > a { color: var(--link); text-decoration: none; }
-			th > a:hover { color: var(--shadow); transition: all 0.6s ease-in-out; }
-			tr:nth-child(even) { background-color: var(--link); }
-			/* Arrows */
-			/* .arrow-down:after { content: '\25bc'; padding-left: 0.5em; } }
-			.arrow-up:after { content: '\25b2'; padding-left: 0.5em; } } */
-			/* Pagination */
-			.pagination-container { display: inline-flex; font-size: 1.3rem; border-radius: 15px; margin-top: 1rem; }
-			.pagination { margin: -2px 0; padding: 5px 0; }
-			.pagination-item { border-radius: 20px; text-decoration: none; color: var(--shadow); margin: -1.5px; padding: 5px; border: 1.4px solid var(--primary); background-color: var(--link); }
-			.pagination-item:hover, .active { background-color: var(--primary); color: var(--secondary); text-decoration: underline; transition: all 0.6s ease-in-out; }
-			.active { border: 4px double var(--secondary); pointer-events: none; }
-			.disabled { background-color: var(--primary); color: var(--secondary); pointer-events: none; opacity: 0.5; }
-			.hidden { visibility: hidden; display: none; }
-			/* Input Fields */
-			select { cursor: pointer; font-family: inherit; font-size: 1.1rem; background-color: var(--link); color: var(--primary); padding: 0.5rem; border-radius: 7px; margin: 1rem; transition: all 0.6s ease-in-out; transition: all 0.6s ease-in-out; }
-			button { background-color: var(--link); border: 0.2rem double var(--link); border-radius: 0.3rem; color: var(--shadow); cursor: pointer; font-family: inherit; font-size: 1.1rem; line-height: 1.3rem; padding: 0.5rem; }
-			button:hover { background-color: var(--primary); border: 0.2rem double var(--secondary); color: var(--secondary); transition: all 0.6s ease-in-out; transition: all 0.6s ease-in-out; }
-			/* Filter */
-			.filter-container { margin-top: 1rem; }
-			input { background-color: var(--link);  border: 0.15rem solid var(--link); border-radius: 0.3rem; font-family: inherit; font-size: 1.2rem; line-height: 1.2rem; margin-right: 1rem;  padding: 0.5rem; }
-			input:focus { background-color: var(--secondary); border: 0.15rem solid var(--link); color: var(--shadow); transition: all 0.6s ease-in-out; }
-		</style>
-	</head>
-	<body>
-
-		<?php
-
-			// function connection_string( $query ) {
-
-			// Creating a new connection.
-			$connection = new mysqli( 'localhost', 'root', '', 'targetdb' );
-
-			// Checking connection availability.
-			if ( $connection->connect_error ) {
-				die( '<b>Failed to establish connection</b>' . connection_error() );
-			}
-
-				// $result = $connection->query( $query );
-
-				// return $result;
-			// }
-
-			// $search_result =  connection_string( $query );
-
-
-			/****************************************************************/
-			/*---------------------- GET VARIABLES -------------------------*/
-			/****************************************************************/
-			
-			// Retreiving number of records page.
-			if ( isset( $_GET[ 'records_per_page' ] ) ) {
-				$records_per_page = $_GET[ 'records_per_page' ];
-			} else {
-				$records_per_page = 10;
-			}
-
-			// Retreiving page number "if any".
-			if ( isset( $_GET[ 'page_num' ] ) ) {
-				$page_num = $_GET[ 'page_num' ];
-				if ( $page_num <= 0 ) {
-					$page_num = 1;
-				}
-			} else {
-				$page_num = 1;
-			}
-
-			// Retreiving number of records per page.
-			if ( $page_num == '' || $page_num == 1 ) {
-				$offset = 0;
-			} else {
-				$offset = ( $page_num * $records_per_page ) - $records_per_page;
-			}
-
-			// Sorting records according to certain field name.
-			if ( isset( $_GET[ 'sort_field' ] ) ) {
-				$sort_field = $_GET[ 'sort_field' ];
-			} else {
-				$sort_field = 1;
-			}
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <link rel="stylesheet" type="text/css" href="./main.css"/>
+    <title>Training</title>
+</head>
+<body>
+  <?php
+  /****************************************************************/
+  /*---------------------- GET VARIABLES -------------------------*/
+  /****************************************************************/
+    session_start();
 
-			// Sorting records according to certain field order.
-			if ( isset( $_GET[ 'sort_order' ] ) ) {
-				$sort_order = $_GET[ 'sort_order' ];
-			} else {
-				$sort_order = 'ASC';
-			}
+    // Sorting Records According To Certain Field Name.
+    $sortField = $_GET[ 'sortField' ] ?? 1;
 
-			if ( isset( $_GET[ 'submit' ] )) {
-				$selected_items = $_GET[ 'records_per_page' ];
-				$records_per_page = $selected_items;
-				// $submit = $selected_items;
+    // Sorting Records According To Certain Field Order.
+    $sortOrder = $_GET[ 'sortOrder' ] ?? 'ASC';
 
+    // Retrive Number Of Records Per Page.
+    $recordsPerPage = $_GET[ 'recordsPerPage' ] ?? 20;
 
-				// Search
-				// $value_to_search = $_GET['search_query'];
-				// $query = "SELECT ClientID, ClientName, ClientAddress
-				//           FROM `clients`
-				//           WHERE CONCAT( ClientID, ClientName, ClientAddress )
-				//           LIKE '%" . $value_to_search . "%'";
+    // Choose A Selected Number Of Rows.
+    $selectedItems = $_GET[ 'selectedItems' ] ?? $recordsPerPage;
 
-				// $search_result = $connection->query( $query );
+    // Retrive Page Numbers.
+    if ( isset( $_GET[ 'page' ] ) ) {
+      $page = $_GET[ 'page' ];
 
-				// $search_result =  connection_string( $query );
+      if ( $page < 1 ) {
+        $page = 1;
+      }
+    } else {
+      $page = 1;
+    }
 
-			}
-			else {
-				$records_per_page = $records_per_page;
-				$selected_items = $records_per_page;
-				$submit = $selected_items;
+    // Search For Specific String Character.
+    if ( isset( $_GET[ 'searchQuery' ] ) ) {
+      $searchQuery = $_GET[ 'searchQuery' ];
+      $_SESSION[ 'searchQuery' ] = $searchQuery;
+    } else {
+      $searchQuery = '';
+    }
 
-				// $query = 'SELECT ClientID, ClientName, ClientAddress FROM `clients`';
-				// $search_result = $connection->query( $query );
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
 
-			}
+    $sql = initialSql();
 
-    /**************************************************************************************************/
+    // Connect To Database.
+    $connection = connectionString();
 
-			echo '<div class="container">';
+    // Fetch Initial Result Set To Make A Selection Option.
+    $initialResult = $connection->query( $sql );
 
-				echo '<h2><a href="./">Sorting</a></h2>';
-				echo '<hr>';
+    $numRows = $initialResult->num_rows;
 
-				$sql = sql_constructor( $sort_field, $sort_order, $offset, $records_per_page );
+    // Call SQL Query After Concatination.
+    $constructedSql = constructSqlQuery( $page, $recordsPerPage, $sortField, $sortOrder, $searchQuery );
 
-				$result = $connection->query( $sql );
+    $result = $connection->query( $constructedSql );
 
-				// $result = connection_string( $sql );
+  ?>
 
-				// Pagination Links
-				$page_sql = "SELECT ClientID, ClientName, ClientAddress FROM Clients";
-				$data = $connection->query( $page_sql );
-				$result_set = $data->num_rows;
-				$records_per_page = ceil( $result_set / $records_per_page );
 
+  <!-- START MAIN CONTAINER -->
+  <div class="container">
 
-				// pagination( $page_num, $records_per_page, $selected_items, $sort_field, $sort_order );
-				pagination( $page_num, $records_per_page, $sort_field, $sort_order );
+    <h1><a href="index.php">Training</a></h1>
+    <hr>
 
+    <!-- START PAGINATION CONTAINER -->
+    <div class="pagination-container">
+      <div class="pagination">
+        <?php pagination( $connection, $sql, $result, $page, $recordsPerPage, $numRows, $searchQuery ); ?>
+      </div>
+    </div>
+    <!-- END PAGINATION CONTAINER -->
 
+    <!-- START FILTER CONTAINER -->
+    <div class="filter-container">
 
-				// var_dump($records_per_page);
+      <!-- START FORM -->
+      <form action="<?php $_SERVER[ 'PHP_SELF' ] ?>" method="GET">
 
-				echo '<div class="filter-container">';
+        <!-- START SELECT OPTIONS -->
+        <label for="recordsPerPage">Items No:</label>
 
-					echo '<form method="GET">';
+        <select name="recordsPerPage">
+          <?php for( $i = 20; $i < $numRows; $i += 20 ) : ?>
 
-						echo '<select name="records_per_page">';
+            <?php if( $i > 80 ) break; ?>
 
-							for ( $i = 1; $i < $records_per_page; $i++ ) {
-								// $j = $i + 1;
-								$k = ( $i * 10 );
+            <?php if ( $i == $selectedItems ) : ?>
 
-								if ( $k == $selected_items ) {
-									echo '<option value"'. $i . '" selected="selected">' . $k . '</option>';
-								} else {
-									echo '<option value"'. $i . '">' . $k . '</option>';
-								}
+              <option value="<?php echo $i; ?>" selected="selected"><?php echo $i; ?></option>
 
-							}
+            <?php else : ?>
+              <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
 
-						echo '</select>';
+            <?php endif; ?>
 
-						echo '<input type="text" name="search_query" placeholder="Search for a Client">';
+          <?php endfor; ?>
+        </select>
+        <!-- END SELECT OPTIONS -->
 
+        <input type="text" name="searchQuery" placeholder="Search for a Client">
+        <button type="submit" name="submit" value="Filter">Search</button>
 
-						echo '<button type="submit" name="submit">Search</button>';
 
-					echo '</form>';
+      </form>
+      <!-- END FORM -->
 
-				echo '</div>';
+    </div>
+    <!-- END FILTER CONTAINER -->
 
 
+    <table>
+      <thead>
+        <?php displayQueryHeader( $result, $page, $recordsPerPage, $sortOrder, $searchQuery ); ?>
+      </thead>
+      <tbody>
+        <?php displayQueryRows( $result ); ?>
+      </tbody>
+    </table>
 
+    <?php session_destroy(); ?>
+    <?php $connection->close(); ?>
 
-
-
-				echo '<table>';
-					display_header( $result, $page_num, $records_per_page, $sort_order );
-					display_rows( $result );
-				echo '</table>';
-
-				echo '<hr>';
-
-			echo '</div>';
-
-			$connection->close();
-
-			/****************************************************************/
-			/*------------------------ FUNCTIONS ---------------------------*/
-			/****************************************************************/
-
-			function sql_constructor( $sort_field, $sort_order, $offset, $records_per_page ) {
-				$sql = "SELECT ClientID, ClientName, ClientAddress FROM `clients`";
-				$sql .= " ORDER BY $sort_field $sort_order";
-				$sql .= " LIMIT $offset, $records_per_page";
-
-				return ( $sql );
-			}
-
-			/*********************************************************************/
-			//       Looping on items to make the equivelent page numbers.       //
-			/*********************************************************************/
-			function pagination( $page_num, $records_per_page, $sort_field, $sort_order ) {
-				$prev = $page_num - 1;
-				$next = $page_num + 1;
-					echo '<div class="pagination-container">';
-						echo '<div class="pagination">';
-
-					// Toggle Prev button according to number of pages, & checking if it has sort_field & sort_order.
-					if ( $page_num == '' || $page_num == 1 ) {
-						// echo '<a class="pagination-item hidden" ' . $prev . '">Prev</a>';
-						echo '<a class="pagination-item hidden" href="?page_num='.$prev.'">Prev</a>';
-
-					}
-					else {
-						if ( $sort_field == 1 && $sort_order == 'ASC' ) {
-							echo '<a class="pagination-item" href="?page_num=' . $prev . '&records_per_page=' . $records_per_page . '">Prev<a>';
-						} else {
-							echo '<a class="pagination-item" href="?page_num=' . $prev . '&records_per_page=' . $records_per_page . '&sort_field=' . $sort_field . '&sort_order=' . $sort_order . '">Prev</a>';
-						}
-					}
-
-					for ( $i = 0; $i < $records_per_page; $i++ ) {
-						$j = $i + 1;
-						// Adding active class to the current page number.
-						if ( $j == $page_num ) {
-							echo '<a class="pagination-item active" href="?page_num=' . $j . '&records_per_page=' . $records_per_page . '">' . $j . '</a>';
-						} else {
-							echo '<a class="pagination-item" href="?page_num=' . $j . '&records_per_page=' . $records_per_page . '">' . $j . '</a>';
-						}
-					}
-
-					// Toggle Next button according to number of pages, & checking if it has sort_field & sort_order.
-					if ( $page_num >= $records_per_page ) {
-						echo '<a class="pagination-item hidden"' . $next . ' ">Next</a>';
-
-						$page_num == $records_per_page;
-
-					} else {
-						if ( $sort_field == 1 && $sort_order == 'ASC' ) {
-							echo '<a class="pagination-item" href="?page_num=' . $next . '&records_per_page=' . $records_per_page . '">Next</a>';
-						} else {
-							echo '<a class="pagination-item" href="?page_num=' . $next . '&records_per_page=' . $records_per_page . '&sort_field=' . $sort_field . '&sort_order=' . $sort_order . '">Next</a>';
-						}
-					}
-				echo '</div>
-			</div>';
-			}
-
-			/*********************************************************************/
-			// Looping on table header rows, drawing & displaying header names.  //
-			/*********************************************************************/
-
-			function display_header( $result, $page_num, $records_per_page, $sort_order ) {
-				$field_cnt = $result->field_count;
-
-				// Check & Toggling sort order between ASC & DESC.
-				$sort_order == 'DESC' ? $sort_order = 'ASC' : $sort_order = 'DESC';
-
-				for ( $i = 0; $i < $field_cnt; $i++ ) {
-					$field = $result->fetch_field();
-					// incrementing counter by 1 to start with "1" instead of "0".
-					$k = $i + 1;
-
-
-					// Check for page number, to print Out the clickable column names.
-					if ( $page_num > $records_per_page ) {
-						echo '<th><a class="disabled" href="?page_num=' . $page_num . '&sort_field=' . $k . '&sort_order='. $sort_order .'">' . $field->name . '</a></th>';
-					} else {
-						echo '<th><a href="?page_num=' . $page_num . '&sort_field=' . $k . '&sort_order=' . $sort_order . '">' . $field->name . '</a></th>';
-					}
-				}
-			}
-
-			/********************************************************************/
-			//    Looping on table data, drawing rows & displaying its data.    //
-			/*********************************************************************/
-
-			function display_rows( $result ) {
-				$field_cnt = $result->field_count;
-
-				// Checking if table has rows or not, if it has; draw the table rows, table data tags & fetch data in, else return a message.
-				if ( $result->num_rows > 0 ) {
-					while ( $rows = $result->fetch_array() ) {
-						echo '<tr>';
-							for ( $j = 0; $j < $field_cnt; $j++ ) {
-								echo '<td>' . $rows[ $j ] .'</td>';
-							}
-						echo '</tr>';
-					}
-				} else {
-					echo '<h4 class="main">No Result Returned.</h4>';
-				}
-			}
-
-		?>
-	</body>
+    <hr>
+  </div>
+  <!-- END MAIN CONTAINER -->
+</body>
 </html>
+
+  <?php
+
+	/****************************************************************/
+	/*------------------------ FUNCTIONS ---------------------------*/
+	/****************************************************************/
+
+      /**********************************************************************/
+      //                Establish New Connection To Database.               //
+      /**********************************************************************/
+      function connectionString() {
+
+        $connection = new mysqli( 'localhost', 'root', '', 'targetdb' );
+
+        if ( $connection->connect_error ) {
+          die( '<b>Failed to establish connection</b>' . connection_error() );
+        }
+
+        return ( $connection );
+      }
+
+      /**********************************************************************/
+      //          Initialize The Main Sql Query To Fetch All Data.          //
+      /**********************************************************************/
+      function initialSql() {
+
+        $sql = "SELECT id AS 'ID',
+                       client_id AS 'Client ID',
+                       client_name AS 'Client Name',
+                       client_address AS 'Client Address'
+                FROM `client`";
+
+        return ( $sql );
+      }
+
+      /**********************************************************************/
+      //  Construct SQL Query Sorting Fields, Orders & Search Query Result. //
+      /**********************************************************************/
+      function constructSqlQuery( $page, $recordsPerPage, $sortField, $sortOrder, $searchQuery ) {
+
+        $constructedSql = initialSql();
+
+        $limit = ' LIMIT ' . ( $page - 1 ) * $recordsPerPage . ', ' .$recordsPerPage;
+
+        if ( $searchQuery <> '' ) {
+          $constructedSql .= " WHERE CONCAT( id, client_id, client_name, client_address ) LIKE '%". $searchQuery ."%'";
+        }
+
+        if ( $sortField <> '1' || $sortOrder <> 'ASC' ) {
+          $constructedSql .= " ORDER BY $sortField $sortOrder";
+        }
+
+        $constructedSql .= $limit;
+
+        return ( $constructedSql );
+      }
+
+      /**********************************************************************/
+      //  Looping On Table Header Rows, Drawing & Displaying Header Names.  //
+      /**********************************************************************/
+      function pagination( $connection, $sql, $result, $page, $recordsPerPage, $numRows, $searchQuery ) {
+
+        $lastPage = ceil( $numRows / $recordsPerPage );
+        $firstPage = ceil( $recordsPerPage / $numRows );
+
+        if ( $page >= $lastPage ) {
+          $page = $lastPage;
+        }
+
+        // Center The Active Page.
+        $centerPage = '';
+        $sub1 = $page - 1;
+        $sub2 = $page - 2;
+        $add1 = $page + 1;
+        $add2 = $page + 2;
+
+
+        if ( $page == 1) {
+          $centerPage .= '<span class="pagination-item active">'.$page.'</span>';
+          $centerPage .= '<a class="pagination-item" href="'.$_SERVER['PHP_SELF'].'?page='.$add1.'&searchQuery='.$searchQuery.'">'.$add1.'</a>';
+
+        } elseif ( $page == $lastPage ) {
+          $centerPage .= '<a class="pagination-item" href="'.$_SERVER['PHP_SELF'].'?page='.$sub1.'&searchQuery='.$searchQuery.'">'.$sub1.'</a>';
+          $centerPage .= '<span class="pagination-item active">'.$page.'</span>';
+
+        } elseif ( $page > 2 && $page < ( $lastPage - 1 ) ) {
+          $centerPage .= '<a class="pagination-item" href="'.$_SERVER['PHP_SELF'].'?page='.$sub2.'">'.$sub2.'</a>';
+          $centerPage .= '<a class="pagination-item" href="'.$_SERVER['PHP_SELF'].'?page='.$sub1.'">'.$sub1.'</a>';
+          $centerPage .= '<span class="pagination-item active">'.$page.'</span>';
+          $centerPage .= '<a class="pagination-item" href="'.$_SERVER['PHP_SELF'].'?page='.$add1.'">'.$add1.'</a>';
+          $centerPage .= '<a class="pagination-item" href="'.$_SERVER['PHP_SELF'].'?page='.$add2.'">'.$add2.'</a>';
+
+        } elseif ( $page > 1 && $page < $lastPage ) {
+          $centerPage .= '<a class="pagination-item" href="'.$_SERVER['PHP_SELF'].'?page='.$sub1.'">'.$sub1.'</a>';
+          $centerPage .= '<span class="pagination-item active">'.$page.'</span>';
+          $centerPage .= '<a class="pagination-item" href="'.$_SERVER['PHP_SELF'].'?page='.$add1.'">'.$add1.'</a>';
+        }
+
+        // Display Paagination Buttons.
+        $paginationDisplay = '';
+
+        if ( $lastPage != "1" ) {
+          $paginationDisplay .= '<h3 style="background-color:var(--primary);border-radius:40%;border:0.4rem double var(--secondary);color:var(--link);min-width:195px;">Page <span style="color:var(--secondary);">'.$page.'</span> of <span style="color:var(--secondary);">'.$lastPage.'</span></h3>';
+
+          if ( $page != 1 ) {
+            $prev = $page - 1;
+            $paginationDisplay .= '<a class="pagination-item" href="?page='.$firstPage.'&searchQuery='.$searchQuery.'"><<</a>';
+            $paginationDisplay .= '<a class="pagination-item" href=" '.$_SERVER[ 'PHP_SELF' ].'?page='.$prev.'&searchQuery='.$searchQuery.'"><</a>';
+          }
+
+          $paginationDisplay .= $centerPage;
+
+          if ( $page != $lastPage ) {
+            $next = $page + 1;
+            $paginationDisplay .= '<a class="pagination-item" href=" '.$_SERVER[ 'PHP_SELF' ].'?page='.$next.'&searchQuery='.$searchQuery.'">></a>';
+            $paginationDisplay .= '<a class="pagination-item" href="?page='.$lastPage.'&searchQuery='.$searchQuery.'">>></a>';
+          }
+        }
+
+        echo $paginationDisplay;
+
+      }
+      /**********************************************************************/
+      //  Looping On Table Header Rows, Drawing & Displaying Header Names.  //
+      /**********************************************************************/
+      function displayQueryHeader( $result, $page, $recordsPerPage, $sortOrder, $searchQuery ) {
+
+        $fieldCount = $result->field_count;
+
+        // Toggling Sort Order Between ASC & DESC.
+        $sortOrder == 'DESC' ? $sortOrder = 'ASC' : $sortOrder = 'DESC';
+
+        // Count Table Fields To Fetch Data.
+        for ( $i = 0; $i < $fieldCount; $i++ ) {
+          $field = $result->fetch_field();
+
+          // Increment Counter By 1 To Start SortField With "1" Instead Of "0".
+          $k = $i + 1;
+
+          // Constructing URL Parameters.
+            echo '<th><a href="?page='.$page.'&sortField='.$k.'&sortOrder='.$sortOrder.'&recordsPerPage='.$recordsPerPage.'&searchQuery='.$searchQuery.'">'. $field->name .'</a></th>';
+          }
+        }
+
+      /***********************************************************************/
+      //     Looping On Table Data, Drawing Rows & Displaying Its Data.      //
+      /***********************************************************************/
+      function displayQueryRows( $result ) {
+
+        $fieldCount = $result->field_count;
+
+        if ( $result->num_rows > 0 ) {
+          while( $rows = $result->fetch_array() ) {
+            echo '<tr>';
+              for ( $i = 0; $i < $fieldCount; $i++) {
+                echo '<td>' . $rows[ $i ] . '</td>';
+              }
+            echo '</tr>';
+          }
+        } else {
+          echo '<h4 class="main">No Result Returned.</h4>';
+        }
+      }
+
+  ?>
