@@ -1,56 +1,35 @@
-
-
-DELIMITER $$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `CopyAllData` ()  NO SQL
-SELECT
-	CustomerID, CustomerName, CustomerAddress
-FROM
-    `sourcedb`.`Customers`
-LEFT JOIN `targetdb`.`Clients` USING(`client_name`)
-WHERE
-    (`Clients`.`client_id` IS NULL)$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `MinusQuery` ()  NO SQL
-INSERT INTO clients(
-    client_id,
-    client_name,
-    client_address
-)
-SELECT
-    CustomerID,
-    CustomerName,
-    CustomerAddress
-FROM
-    sourcedb.customers
-LEFT JOIN clients ON customers.CustomerID = clients.client_id
-WHERE clients.client_id IS NULL$$
-
-DELIMITER ;
-
--- --------------------------------------------------------
 CREATE DATABASE `targetdb`;
 
+--
 -- Accounts to restrict authorizations, & privileges.
+--
+
 CREATE TABLE `account` (
-	`id` int(11) PRIMARY KEY AUTO_INCREMENT,
-	`account_id` int(11) UNIQUE KEY NOT NULL,
-	`first_name` varchar(50) UNIQUE KEY NOT NULL,
-	`lastst_name` varchar(50) UNIQUE KEY NOT NULL,
-	`email` varchar(100) UNIQUE KEY NOT NULL,
-	`password` varchar(100) NOT NULL,
-	`hash` varchar(32) NOT NULL,
-	`active` tinyint(1) NOT NULL DEFAULT 0
-);
+  `id` int(11) PRIMARY KEY AUTO_INCREMENT,
+  `account_id` int(11) UNIQUE KEY NOT NULL,
+  `first_name` varchar(50) NOT NULL,
+  `lastst_name` varchar(50) NOT NULL,
+  `email` varchar(100) UNIQUE KEY NOT NULL,
+  `password` varchar(100) NOT NULL,
+  `hash` varchar(32) NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `client`
+--
 
 CREATE TABLE `client` (
   `id` int(11) PRIMARY KEY AUTO_INCREMENT,
   `client_id` int(11) UNIQUE KEY NOT NULL,
   `client_name` varchar(50) NOT NULL,
   `client_address` varchar(150) UNIQUE KEY NOT NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `client`
+--
 
 INSERT INTO `client` (`id`, `client_id`, `client_name`, `client_address`) VALUES
 (1, 139, 'Ana Trujillo', 'Avda. de la Constitucion 2222'),
@@ -288,3 +267,38 @@ INSERT INTO `client` (`id`, `client_id`, `client_name`, `client_address`) VALUES
 (233, 43, 'Schroeder Everardo', '5907 Huels Isle Apt. 375'),
 (234, 44, 'Kling Horace', '52213 Emmerich Lock Apt. 736'),
 (235, 46, 'Skiles Manuel', '12280 Niko Trail');
+
+----------------------------------------------------------
+-- 
+--  Using Minus Query To Copy Data From Database To Another
+-- 
+DELIMITER $$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CopyAllData` ()  NO SQL
+SELECT
+	customer_id, customer_name, customer_address
+FROM
+    `sourcedb`.`customer`
+LEFT JOIN `targetdb`.`client` USING(`client_name`)
+WHERE
+    (`client`.`client_id` IS NULL)$$
+
+----------------------------------------------------------
+CREATE DEFINER=`root`@`localhost` PROCEDURE `MinusQuery` ()  NO SQL
+INSERT INTO client(
+    client_id,
+    client_name,
+    client_address
+)
+SELECT
+    customer_id,
+    customer_name,
+    customer_address
+FROM
+    sourcedb.customers
+LEFT JOIN client ON customer.customer_id = client.client_id
+WHERE client.client_id IS NULL$$
+
+DELIMITER ;
+
+----------------------------------------------------------
